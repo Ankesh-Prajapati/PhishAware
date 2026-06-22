@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{const s=PAStore.get(),has=Object.keys(s.attempts||{}).length||Object.keys(s.training||{}).length;location.replace(has?'dashboard.html':'simulations.html')});
