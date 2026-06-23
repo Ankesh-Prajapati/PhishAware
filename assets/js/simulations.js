@@ -6,7 +6,7 @@ document.addEventListener('pa:ready', () => {
     { id: 'credential-harvesting', title: 'Credential Harvesting', icon: 'bi-person-lock', page: 'fake-login.html', difficulty: 'Intermediate', summary: 'Spot forms designed to capture usernames, passwords, and verification codes.', progressId: 'login' },
     { id: 'delivery-scam', title: 'Fake Delivery Scam', icon: 'bi-box-seam', page: 'smishing.html', difficulty: 'Beginner', summary: 'Recognize parcel alerts that use urgency, short links, and unexpected fees.', progressId: 'smishing' }
   ]);
-  content.innerHTML = `<div class="mb-4"><div class="page-eyebrow">Practice safely</div><h1 class="page-title">Choose a simulation</h1><p class="text-muted">Eight attack categories, six focused interactive labs, and immediate educational feedback.</p></div><div class="row g-4">${catalog.map(item => {
+  content.innerHTML = `<div class="mb-4"><div class="page-eyebrow">Practice safely</div><h1 class="page-title">Choose a simulation</h1><p class="text-muted">${PA_SCENARIOS.length} attack categories with focused interactive labs and immediate educational feedback.</p></div><div class="row g-4">${catalog.map(item => {
     const progressId = item.progressId || item.id;
     const attempt = state.attempts?.[progressId];
     const session = state.sessions?.[progressId];

@@ -31,12 +31,17 @@ The site URL will be `https://YOUR-ACCOUNT.github.io/YOUR-REPOSITORY/` for a pro
 
 Commit and push changes to `main`. GitHub Pages automatically republishes the static files. Hard-refresh the site if a browser cache retains older assets.
 
+## 404 Page
+
+GitHub Pages automatically serves `404.html` at the repository root for any unmatched path - no configuration needed beyond having the file present, which it already is.
+
 ## Production Checklist
 
 - Confirm every navigation route loads from the published URL.
 - Complete one simulation and refresh to verify LocalStorage persistence.
 - Test dark mode and the mobile sidebar.
-- Confirm dashboard charts and PDF export load through the production Content Security Policy.
-- Consider self-hosting pinned CDN assets when offline use or a strict supply-chain policy is required.
+- Confirm dashboard charts and PDF export load through the page's Content-Security-Policy `<meta>` tag and pinned Subresource Integrity (SRI) hashes - open the browser console on first deploy; a CSP violation or an integrity mismatch will log a clear, specific error rather than failing silently.
+- Replace the placeholder `https://your-username.github.io/your-repo/` with your real published URL in `robots.txt`, `sitemap.xml`, and the per-page `canonical`/Open Graph/Twitter meta tags (cosmetic only - affects link previews and search indexing, not app functionality).
+- Consider self-hosting pinned CDN assets when offline use or a strict supply-chain policy is required; keep the matching SRI hash if you do.
 - Use a custom domain and enforced HTTPS when organizational policy requires it.
 

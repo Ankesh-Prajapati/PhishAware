@@ -7,7 +7,7 @@ Open `index.html` or the deployed GitHub Pages URL. New users are sent to Simula
 ## Completing a Simulation
 
 1. Select a simulation.
-2. Inspect the sample message or page. Click visible suspicious details to record warning signs.
+2. Inspect the sample message or page. Click visible suspicious details - or press Tab to focus one and Enter/Space to select it - to record warning signs.
 3. Select an answer for each of the three questions.
 4. Read the feedback, review the running score, and choose **Next question**.
 5. Finish the simulation, continue to another exercise, or open the updated report.

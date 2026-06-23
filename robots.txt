@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ankesh-prajapati.github.io/PhishAware/sitemap.xml

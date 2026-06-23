@@ -1,0 +1,13 @@
+{
+  "name": "phishaware",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only manifest for PhishAware. The site itself is a static, build-free HTML/CSS/JS app - this file exists purely to run the unit tests in tests/ via `npm test`.",
+  "scripts": {
+    "test": "node --test",
+    "lint:html": "html-validate \"*.html\""
+  },
+  "devDependencies": {
+    "html-validate": "^9.5.0"
+  }
+}

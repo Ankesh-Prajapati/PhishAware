@@ -1,0 +1,8 @@
+{
+  "extends": ["html-validate:recommended"],
+  "rules": {
+    "no-utf8-bom": "off",
+    "doctype-style": "off",
+    "no-inline-style": "off"
+  }
+}
