@@ -4,7 +4,7 @@ PhishAware is a production-ready, frontend-only phishing awareness simulation pl
 
 ## Features
 
-- Nine interactive phishing simulations with three scored questions each: email, fake login, QR, SMS, social media, business email compromise, MFA fatigue / push-bombing, banking OTP fraud, and OAuth consent phishing
+- Nine interactive phishing simulations, each walking through three distinct example scenarios in sequence (e.g. three different phishing emails, three different fake login pages) with its own tailored question, options, and explanation: email, fake login, QR, SMS, social media, business email compromise, MFA fatigue / push-bombing, banking OTP fraud, and OAuth consent phishing
 - Realistic Gmail-style, Microsoft-style, mobile lock-screen, banking call/UPI, OAuth consent, social-feed, parking-payment, and Outlook-style training replicas
 - Keyboard-accessible clue hotspots (Tab + Enter/Space) with visible focus rings, in addition to click/tap
 - Immediate per-answer LocalStorage persistence, running scores, clue discovery, decision feedback, progress tracking, and attempt history

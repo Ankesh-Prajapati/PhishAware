@@ -6,16 +6,16 @@ PhishAware is a static multi-page application. Every route loads a shared applic
 
 ## Modules
 
-- `data.js`: scenario and training datasets; no external data is requested.
+- `data.js`: scenario catalog, training lessons, and a per-scenario question bank of three example variants (each with its own artifact content, clue set, question, and explanation); no external data is requested.
 - `storage.js`: versioned LocalStorage schema, migration, validation, attempt history, CRUD helpers, scoring summaries, and risk calculation.
 - `app.js`: shared layout, navigation, storage adapter, aggregate statistics, dark mode, responsive sidebar, and toasts.
-- `simulation.js`: randomized, timed multi-question engine selected by each page's `data-scenario` attribute; records every answer immediately, awards bounded speed bonuses, autosaves active sessions, and restores question or feedback state without duplicate records.
+- `simulation.js`: randomized, timed multi-question engine selected by each page's `data-scenario` attribute; renders a different example artifact for each of the three questions in shuffled order, records every answer immediately, awards bounded speed bonuses, autosaves active sessions, restores question or feedback state without duplicate records, and dispatches a `pa:artifact-rendered` event (with the active scenario ID and variant) after each artifact render so page-specific scripts can react to every example, not just the first.
 - `dashboard.js`: summary metrics and Chart.js visualizations.
 - `simulations.js`: scenario catalog and completion state.
 - `training.js`: training lesson rendering and completion controls.
 - `report.js`: attempt statistics, latest and best scores, decision history, risk recommendations, report chart, reset flow, and jsPDF export.
 - `certificate.js`: certificate eligibility check, HTML-escaped recipient rendering, and jsPDF certificate export.
-- `login-enhancement.js`: isolated fake-login form behavior that clears fields without reading, retaining, or transmitting their contents.
+- `login-enhancement.js`: isolated fake-login form behavior, listening for `pa:artifact-rendered` so it rebuilds the simulated sign-in form for every example variant shown (not just the first); clears fields without reading, retaining, or transmitting their contents, and never auto-selects an answer on submit.
 - `realistic.css`: contained application-replica and executive-report styling, separated from the minified core design system.
 - `landing.js`: redirects the root page to the dashboard for returning users or the selection page for new users.
 
@@ -27,7 +27,7 @@ The versioned key permits future migrations without mixing incompatible data for
 
 ## Scoring
 
-Each simulation contains three questions in a shuffled order. Every selected answer is written immediately as an immutable attempt record with its question ID, decision, correctness, response time, and points. Correct answers receive 80 base points plus a speed bonus: 20 within 10 seconds, 15 within 20, 10 within 30, 5 within 45, then zero. Incorrect answers receive zero. The scenario score is the running average and is updated after every question.
+Each simulation contains three questions in a shuffled order, each paired with a different example artifact (a different phishing email, login page, message, etc., depending on the scenario type) rather than one shared example. Every selected answer is written immediately as an immutable attempt record with its question ID, decision, correctness, response time, and points. Correct answers receive 80 base points plus a speed bonus: 20 within 10 seconds, 15 within 20, 10 within 30, 5 within 45, then zero. Incorrect answers receive zero. The scenario score is the running average and is updated after every question.
 
 The risk score begins at 100 and is reduced by a weighted resilience score: average best scenario score contributes 60 percent, the overall correct-decision rate contributes 25 percent, and training lesson completion contributes 15 percent. Report labels are Low below 25, Medium below 55, and High at 55 or above.
 
