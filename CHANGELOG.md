@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## v1.2.1
+
+### Fixed
+
+- Three example variants kept a hardcoded icon from the original single-variant design even though their brand/theme text changed: the Google and generic VPN-portal login examples still showed the Microsoft logo, all three QR-poster examples showed the parking icon, and all three social-media examples showed a gift icon regardless of whether the scam was a prize, a crypto pitch, or a fake verification badge. Each variant's icon now comes from its own data (`brandIcon`, `posterIcon`, `visualIcon`), fixed in both the initial render and (for the login form) the script that rebuilds it after the page loads.
+
 ## v1.2.0
 
 ### Added
