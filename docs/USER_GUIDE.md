@@ -7,10 +7,11 @@ Open `index.html` or the deployed GitHub Pages URL. New users are sent to Simula
 ## Completing a Simulation
 
 1. Select a simulation.
-2. Inspect the example message or page shown for the first question. Click visible suspicious details - or press Tab to focus one and Enter/Space to select it - to record warning signs.
-3. Select an answer, then read the feedback and choose **Next question**. A new, different example loads automatically for each of the three questions, so read each one freshly rather than assuming it repeats the last one.
-4. Review the running score after each answer.
-5. Finish the simulation, continue to another exercise, or open the updated report.
+2. Read the intro screen, then click **Start simulation** (or **Resume simulation** if you're returning to one in progress) when you're ready - the timer does not start until you click this button.
+3. Inspect the example message or page shown for the first question. Click visible suspicious details - or press Tab to focus one and Enter/Space to select it - to record warning signs.
+4. Select an answer, then read the feedback and choose **Next question**. A new, different example loads automatically for each of the three questions, so read each one freshly rather than assuming it repeats the last one.
+5. Review the running score after each answer.
+6. Finish the simulation, continue to another exercise, or open the updated report.
 
 Each answer is saved immediately in LocalStorage. Refreshing or navigating away does not remove previously submitted answers.
 

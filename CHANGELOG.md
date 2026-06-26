@@ -2,6 +2,35 @@
 
 All notable changes to this project are documented here.
 
+## v1.5.0
+
+### Added
+
+- Google Analytics (GA4) page-view and interaction tracking on every page, via the standard `gtag.js` loader plus a small local `assets/js/analytics.js` holding the tracking ID (`G-ED9BYX2YY0`) in one place.
+
+### Changed
+
+- The Content-Security-Policy `<meta>` tag on every page now also allows `googletagmanager.com`, `google-analytics.com`, and `analytics.google.com` in `script-src`/`connect-src`/`img-src`, so the tracker can actually load and send data under the policy - previously it only allowed jsDelivr. The exact prior, narrower policy (jsDelivr-only) was:
+  `default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src 'self' https://cdn.jsdelivr.net data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'`
+- README's "Data and Privacy" section now discloses the GA integration explicitly, since it sends data externally - everything else in that section (LocalStorage-only learning data) is unchanged.
+
+## v1.4.0
+
+### Fixed
+
+- The session and per-question timers (and therefore speed-bonus eligibility) used to start the instant a simulation page finished loading, with no indication to the learner that the clock was already running - time spent just reading the page intro counted against the first question's speed bonus. Every simulation entry, fresh or resumed, now shows an explicit "Start simulation" / "Resume simulation" button first; the timer is hidden and inactive until that button is clicked, at which point it starts from the correct baseline (zero for a fresh question, or the previously-saved cumulative session time for a resume - verified directly, not just inferred).
+- Added a dedicated test (`tests/simulation-engine.test.mjs`) asserting the timer bar stays hidden and no question is answerable before the Start/Resume click, and that the question timer reads ~00:00 immediately after.
+
+## v1.3.0
+
+### Added
+
+- `tests/data-schema.test.mjs`: validates every example variant in `data.js` against the exact `fields`/`clues` keys its `renderArtifact` branch reads (extracted directly from the `simulation.js` source, not from memory), plus question/options/answer shape and per-scenario icon-field uniqueness.
+- `tests/simulation-engine.test.mjs`: drives all 9 scenario pages through a real DOM (jsdom) across all 3 example steps and asserts the examples are genuinely distinct, every clue stays keyboard-accessible at every step, the simulation reaches completion, and each example's brand/poster/visual icon matches its own data rather than a sibling's.
+- `jsdom` added as a real devDependency (previously only installed ad hoc); `.github/workflows/ci.yml`'s test job now runs `npm install` first.
+
+Both new suites were built by formalizing the exact manual browser-walkthrough process used to find the v1.2.0/v1.2.1 bugs, and were verified against this codebase by deliberately reintroducing each of those bugs and confirming the relevant test fails, then restoring the fix.
+
 ## v1.2.1
 
 ### Fixed

@@ -41,6 +41,7 @@ GitHub Pages automatically serves `404.html` at the repository root for any unma
 - Complete one simulation and refresh to verify LocalStorage persistence.
 - Test dark mode and the mobile sidebar.
 - Confirm dashboard charts and PDF export load through the page's Content-Security-Policy `<meta>` tag and pinned Subresource Integrity (SRI) hashes - open the browser console on first deploy; a CSP violation or an integrity mismatch will log a clear, specific error rather than failing silently.
+- Check the Network tab for a request to `google-analytics.com/g/collect` (or open GA4's Realtime report) to confirm the tracking ID in `assets/js/analytics.js` is firing correctly on the live domain - GA can silently report zero data if the CSP or the ID is wrong.
 - Replace the placeholder `https://your-username.github.io/your-repo/` with your real published URL in `robots.txt`, `sitemap.xml`, and the per-page `canonical`/Open Graph/Twitter meta tags (cosmetic only - affects link previews and search indexing, not app functionality).
 - Consider self-hosting pinned CDN assets when offline use or a strict supply-chain policy is required; keep the matching SRI hash if you do.
 - Use a custom domain and enforced HTTPS when organizational policy requires it.

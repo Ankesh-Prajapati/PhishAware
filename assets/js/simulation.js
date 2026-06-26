@@ -26,21 +26,32 @@
     state.answers ||= [];
     state.phase ||= 'question';
     const questions = state.questionOrder.map(id => bank.find(question => question.id === id));
-    let sessionAnchor = performance.now();
-    let questionAnchor = sessionAnchor;
+    let sessionAnchor;
+    let questionAnchor;
     let timerInterval;
     let saveCounter = 0;
     const content = document.getElementById('appContent');
     const initialAverage = calculateAverage(state.scores);
-    content.innerHTML = `<div class="simulation-stage"><div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3"><div><div class="page-eyebrow">Interactive simulation</div><h1 class="page-title">${scenario.title}</h1><p class="text-muted mb-0">Three different examples are shown in randomized order. Read each one carefully - faster correct decisions earn a small bonus.</p></div><div class="text-end"><span class="badge badge-soft">${scenario.difficulty}</span><div class="small text-muted mt-2">Running score: <strong id="runningScore">${initialAverage}%</strong></div></div></div><div class="simulation-timer mb-3"><span><i class="bi bi-stopwatch"></i>Total <strong id="sessionTimer">00:00</strong></span><span><i class="bi bi-hourglass-split"></i>Question <strong id="questionTimer">00:00</strong></span><span class="timer-hint">Speed bonus: 20 points within 10 seconds</span></div><div id="artifactStage"></div><div class="card p-4 mt-4" id="questionCard"></div></div>`;
+    content.innerHTML = `<div class="simulation-stage"><div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3"><div><div class="page-eyebrow">Interactive simulation</div><h1 class="page-title">${scenario.title}</h1><p class="text-muted mb-0">Three different examples are shown in randomized order. Read each one carefully - faster correct decisions earn a small bonus.</p></div><div class="text-end"><span class="badge badge-soft">${scenario.difficulty}</span><div class="small text-muted mt-2">Running score: <strong id="runningScore">${initialAverage}%</strong></div></div></div><div class="simulation-timer mb-3 d-none" id="timerBar"><span><i class="bi bi-stopwatch"></i>Total <strong id="sessionTimer">00:00</strong></span><span><i class="bi bi-hourglass-split"></i>Question <strong id="questionTimer">00:00</strong></span><span class="timer-hint">Speed bonus: 20 points within 10 seconds</span></div><div id="artifactStage"></div><div class="card p-4 mt-4" id="questionCard"></div></div>`;
 
-    if (state.phase === 'complete') showCompletion();
-    else {
+    function beginSimulation() {
+      document.getElementById('timerBar').classList.remove('d-none');
+      sessionAnchor = performance.now();
+      questionAnchor = sessionAnchor;
       renderQuestion();
       if (state.phase === 'feedback') restoreFeedback();
       startTimer();
       if (resumable) PAToast(`Resumed ${scenario.title} at question ${state.index + 1}.`);
     }
+
+    function renderStartGate() {
+      const card = document.getElementById('questionCard');
+      card.innerHTML = `<div class="text-center py-4"><i class="bi bi-stopwatch fs-1 text-primary mb-3 d-block"></i><h2 class="h5">${resumable ? 'Ready to continue?' : 'Ready to begin?'}</h2><p class="text-muted mb-4 mx-auto" style="max-width:32rem">${resumable ? `You left off on example ${state.index + 1} of ${questions.length}.` : `${questions.length} examples, one question each.`} The timer starts the moment you click below, so take whatever time you need to read this page first.</p><button type="button" class="btn btn-primary px-4" id="startSimBtn"><i class="bi bi-play-fill me-1"></i>${resumable ? 'Resume simulation' : 'Start simulation'}</button></div>`;
+      document.getElementById('startSimBtn').addEventListener('click', beginSimulation, { once: true });
+    }
+
+    if (state.phase === 'complete') showCompletion();
+    else renderStartGate();
 
     function shuffle(items) {
       const result = [...items];

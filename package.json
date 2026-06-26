@@ -8,6 +8,7 @@
     "lint:html": "html-validate \"*.html\""
   },
   "devDependencies": {
-    "html-validate": "^9.5.0"
+    "html-validate": "^9.5.0",
+    "jsdom": "^29.1.1"
   }
 }
