@@ -43,11 +43,14 @@ const ICON_CHECKS = {
   social: { identifyField: 'prizeLabel', iconField: 'visualIcon' },
   smishing: { identifyField: 'contactName', iconField: 'contactIcon' },
   'oauth-consent': { identifyField: 'appName', iconField: 'appIcon' },
+  'job-offer': { identifyField: 'contactName', iconField: 'platformIcon' },
+  'malicious-extension': { identifyField: 'extensionName', iconField: 'extensionIcon' },
 };
 
 const PAGES = [
   'email-phishing.html', 'fake-login.html', 'qr-phishing.html', 'smishing.html',
   'social-media-scam.html', 'ceo-fraud.html', 'mfa-fatigue.html', 'upi-fraud.html', 'oauth-consent.html',
+  'job-offer-scam.html', 'malicious-extension.html', 'vishing-deepfake.html',
 ];
 
 function loadPage(pageFile) {
@@ -77,7 +80,7 @@ function wait(ms) {
 // Drives all 3 questions to completion, recording per-step artifact text,
 // clue accessibility, and the active variant's identifying field (used by
 // the icon checks below).
-async function walkThrough({ dom, scenarioId }) {
+async function walkThrough({ dom, scenarioId }, totalSteps = 3) {
   await wait(200);
   const doc = dom.window.document;
   const bank = dom.window.PA_QUESTION_BANK[scenarioId];
@@ -88,7 +91,7 @@ async function walkThrough({ dom, scenarioId }) {
   startBtn.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
   await wait(30);
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < totalSteps; i++) {
     const artifact = doc.getElementById('artifactStage');
     const rawHtml = artifact.innerHTML;
     const text = artifact.textContent.replace(SAFETY_BANNER, '').trim();
@@ -143,6 +146,38 @@ test('fake-login.html: timer stays hidden and inactive until Start is clicked', 
   }
 });
 
+test('final-exam.html: walks through one question from every category, each with its own correct artifact', async () => {
+  const loaded = loadPage('final-exam.html');
+  try {
+    const doc = loaded.dom.window.document;
+    const examBank = loaded.dom.window.PA_QUESTION_BANK['final-exam'];
+    assert.equal(examBank.length, 12, 'final exam should have exactly one question per real category');
+
+    const { steps, completed } = await walkThrough(loaded, examBank.length);
+
+    assert.equal(steps.length, examBank.length);
+    steps.forEach((step, i) => {
+      assert.ok(step.text.length > 0, `final-exam step ${i}: artifact should not be empty`);
+      assert.ok(step.cluesAccessible, `final-exam step ${i}: every .clue must have tabindex="0" and role="button"`);
+    });
+
+    // Every variant's own identifying text should appear somewhere across
+    // the 12 steps, in any order (question order is shuffled) - this proves
+    // each question rendered using its own _artifactType branch rather than
+    // falling through to the generic "no artifact configured" empty state.
+    const allStepText = steps.map(s => s.text).join(' || ');
+    for (const variant of examBank) {
+      const sampleField = Object.values(variant.fields).find(v => typeof v === 'string' && v.length > 6);
+      assert.ok(allStepText.includes(sampleField), `expected ${variant.id} (${variant._artifactType}) content to appear somewhere in the exam`);
+    }
+
+    assert.ok(completed, 'final exam should reach a completion state after all 12 questions');
+    assert.deepEqual(loaded.errors, []);
+  } finally {
+    loaded.dom.window.close();
+  }
+});
+
 for (const pageFile of PAGES) {
   test(`${pageFile}: walks through 3 distinct, accessible examples and completes`, async () => {
     const loaded = loadPage(pageFile);
@@ -171,6 +206,7 @@ const PAGE_FOR_SCENARIO = {
   email: 'email-phishing.html', login: 'fake-login.html', qr: 'qr-phishing.html',
   smishing: 'smishing.html', social: 'social-media-scam.html', bec: 'ceo-fraud.html',
   'mfa-fatigue': 'mfa-fatigue.html', 'upi-fraud': 'upi-fraud.html', 'oauth-consent': 'oauth-consent.html',
+  'job-offer': 'job-offer-scam.html', 'malicious-extension': 'malicious-extension.html', vishing: 'vishing-deepfake.html',
 };
 
 // Note on 'login': login-enhancement.js rebuilds that panel synchronously

@@ -4,7 +4,8 @@ PhishAware is a production-ready, frontend-only phishing awareness simulation pl
 
 ## Features
 
-- Nine interactive phishing simulations, each walking through three distinct example scenarios in sequence (e.g. three different phishing emails, three different fake login pages) with its own tailored question, options, and explanation: email, fake login, QR, SMS, social media, business email compromise, MFA fatigue / push-bombing, banking OTP fraud, and OAuth consent phishing
+- Twelve interactive phishing simulations, each walking through three distinct example scenarios in sequence (e.g. three different phishing emails, three different fake login pages) with its own tailored question, options, and explanation: email, fake login, QR, SMS, social media, business email compromise, MFA fatigue / push-bombing, banking OTP fraud, OAuth consent phishing, fake job offers, malicious browser extensions, and vishing / deepfake calls
+- A Final Exam capstone: one question from every one of the 12 categories above, in randomized order, generated from the same content so it can never drift out of sync - completing it is required for the certificate, in addition to all 12 individual categories
 - Realistic Gmail-style, Microsoft-style, mobile lock-screen, banking call/UPI, OAuth consent, social-feed, parking-payment, and Outlook-style training replicas
 - Keyboard-accessible clue hotspots (Tab + Enter/Space) with visible focus rings, in addition to click/tap
 - Immediate per-answer LocalStorage persistence, running scores, clue discovery, decision feedback, progress tracking, and attempt history
@@ -36,6 +37,10 @@ PhishAware is a production-ready, frontend-only phishing awareness simulation pl
 |-- mfa-fatigue.html
 |-- upi-fraud.html
 |-- oauth-consent.html
+|-- job-offer-scam.html
+|-- malicious-extension.html
+|-- vishing-deepfake.html
+|-- final-exam.html
 |-- training.html
 |-- report.html
 |-- certificate.html
@@ -139,6 +144,6 @@ npm run lint:html # structural HTML validation (catches things like duplicate id
 `npm test` runs three suites:
 - `tests/storage.test.mjs` - the scoring, summary, and certificate logic in `storage.js` (no DOM, no dependencies).
 - `tests/data-schema.test.mjs` - checks every example variant in `data.js` has exactly the `fields`/`clues` keys its `renderArtifact` branch in `simulation.js` reads, a well-formed question/options/answer, and that icon-bearing fields are distinct across a scenario's 3 variants. Catches a content/code mismatch (a missing field, a typo'd key) immediately instead of someone noticing a broken example by eye.
-- `tests/simulation-engine.test.mjs` - drives each of the 9 scenario pages through a real (jsdom) DOM across all 3 example steps, and asserts: the 3 examples are actually distinct, every clue stays keyboard-accessible at every step, the simulation reaches completion, and - for scenario types with a brand/poster/visual icon - that each example shows its own icon and never a sibling's.
+- `tests/simulation-engine.test.mjs` - drives each of the 12 scenario pages plus the Final Exam through a real (jsdom) DOM, and asserts: the examples are actually distinct, every clue stays keyboard-accessible at every step, the simulation reaches completion, for scenario types with a brand/poster/visual icon that each example shows its own icon and never a sibling's, and that the Final Exam's 12 cross-category questions each render their own correct artifact type.
 
 The last two exist because of two real bugs found by hand while building the multi-example feature (see `CHANGELOG.md` v1.2.0/v1.2.1) that neither a unit test nor an HTML validator would have caught - one was a rendering-engine state bug, the other a hardcoded icon left over from an earlier single-example design. `.github/workflows/ci.yml` runs the full suite plus HTML validation on every push and pull request to `main`.

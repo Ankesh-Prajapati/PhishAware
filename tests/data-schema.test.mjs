@@ -83,7 +83,28 @@ const SCHEMA = {
     nullableFields: [],
     clues: ['publisher', 'scopeMail', 'scopeContacts', 'source'],
   },
+  'job-offer': {
+    fields: ['platform', 'platformIcon', 'contactName', 'contactSubtitle', 'salaryClaim', 'taskAsk', 'feeAsk', 'pressureLine'],
+    nullableFields: [],
+    clues: ['platform', 'salary', 'ask', 'pressure'],
+  },
+  'malicious-extension': {
+    fields: ['extensionName', 'extensionIcon', 'publisherNote', 'permission1', 'permission2', 'permission3', 'permission4', 'sourceNote'],
+    nullableFields: [],
+    clues: ['publisher', 'permission1', 'permission2', 'source'],
+  },
+  vishing: {
+    fields: ['callerLabel', 'callerNumber', 'line1', 'line2', 'askLine', 'pressureLine'],
+    nullableFields: [],
+    clues: ['identity', 'ask', 'pressure', 'unsolicited'],
+  },
 };
+
+// final-exam isn't a real artifact type - its 12 entries are generated copies
+// of one variant from each real category (see data.js), each tagged with the
+// category it came from via _artifactType. It's validated against whichever
+// schema its _artifactType points to, not its own entry.
+const FINAL_EXAM_ID = 'final-exam';
 
 test('PA_SCENARIOS and PA_QUESTION_BANK have exactly matching scenario ids', () => {
   const { PA_SCENARIOS, PA_QUESTION_BANK } = loadData();
@@ -95,7 +116,10 @@ test('PA_SCENARIOS and PA_QUESTION_BANK have exactly matching scenario ids', () 
   const scenarioIds = PA_SCENARIOS.map(s => s.id).sort().join(',');
   const bankIds = Object.keys(PA_QUESTION_BANK).sort().join(',');
   assert.equal(scenarioIds, bankIds, 'every scenario must have a question bank entry and vice versa');
-  assert.equal(scenarioIds, Object.keys(SCHEMA).sort().join(','), 'this test\'s SCHEMA must cover exactly the same scenario ids - update SCHEMA when adding/removing a scenario type');
+  // final-exam is validated structurally (see FINAL_EXAM_ID above) rather than
+  // via its own SCHEMA entry, so it's covered separately here.
+  const expectedIds = [...Object.keys(SCHEMA), FINAL_EXAM_ID].sort().join(',');
+  assert.equal(scenarioIds, expectedIds, 'this test\'s SCHEMA must cover exactly the same scenario ids - update SCHEMA when adding/removing a scenario type');
 });
 
 test('every PA_SCENARIOS entry has the catalog fields it needs', () => {
@@ -107,10 +131,12 @@ test('every PA_SCENARIOS entry has the catalog fields it needs', () => {
   }
 });
 
-test('every scenario has exactly 3 example variants with unique ids', () => {
-  const { PA_QUESTION_BANK } = loadData();
+test('every scenario has exactly 3 example variants with unique ids (final-exam has one per real category)', () => {
+  const { PA_SCENARIOS, PA_QUESTION_BANK } = loadData();
+  const realCategoryCount = PA_SCENARIOS.filter(s => s.id !== FINAL_EXAM_ID).length;
   for (const [scenarioId, variants] of Object.entries(PA_QUESTION_BANK)) {
-    assert.equal(variants.length, 3, `${scenarioId} should have exactly 3 variants (this app is built around 3-step walkthroughs)`);
+    const expected = scenarioId === FINAL_EXAM_ID ? realCategoryCount : 3;
+    assert.equal(variants.length, expected, `${scenarioId} should have exactly ${expected} variants`);
     const ids = variants.map(v => v.id);
     assert.equal(new Set(ids).size, ids.length, `${scenarioId} variant ids must be unique: ${ids}`);
   }
@@ -119,6 +145,7 @@ test('every scenario has exactly 3 example variants with unique ids', () => {
 test('every variant has the exact fields/clues its renderArtifact branch reads', () => {
   const { PA_QUESTION_BANK } = loadData();
   for (const [scenarioId, variants] of Object.entries(PA_QUESTION_BANK)) {
+    if (scenarioId === FINAL_EXAM_ID) continue; // validated per-variant below, against each one's _artifactType
     const schema = SCHEMA[scenarioId];
     assert.ok(schema, `no SCHEMA entry for scenario "${scenarioId}" - add one`);
 
@@ -143,6 +170,22 @@ test('every variant has the exact fields/clues its renderArtifact branch reads',
         const value = variant.clues[key];
         assert.ok(typeof value === 'string' && value.length > 0, `${label}: clues.${key} must be a non-empty string (every clue key is always rendered, even for variants where a related field is null)`);
       }
+    }
+  }
+});
+
+test('final-exam variants are valid against the schema of the category they came from', () => {
+  const { PA_QUESTION_BANK } = loadData();
+  for (const variant of PA_QUESTION_BANK[FINAL_EXAM_ID]) {
+    const label = `final-exam/${variant.id}`;
+    assert.ok(variant._artifactType, `${label}: missing _artifactType - simulation.js needs this to know which renderArtifact branch to use`);
+    const schema = SCHEMA[variant._artifactType];
+    assert.ok(schema, `${label}: _artifactType "${variant._artifactType}" has no SCHEMA entry`);
+    for (const key of schema.fields) {
+      assert.ok(Object.prototype.hasOwnProperty.call(variant.fields, key), `${label}: fields.${key} is missing`);
+    }
+    for (const key of schema.clues) {
+      assert.ok(typeof variant.clues[key] === 'string' && variant.clues[key].length > 0, `${label}: clues.${key} must be a non-empty string`);
     }
   }
 });
@@ -176,6 +219,8 @@ test('icon-bearing fields actually differ across a scenario\'s 3 variants', () =
     social: 'visualIcon',
     smishing: 'contactIcon',
     'oauth-consent': 'appIcon',
+    'job-offer': 'platformIcon',
+    'malicious-extension': 'extensionIcon',
   };
   for (const [scenarioId, iconField] of Object.entries(ICON_FIELD)) {
     const icons = PA_QUESTION_BANK[scenarioId].map(v => v.fields[iconField]);

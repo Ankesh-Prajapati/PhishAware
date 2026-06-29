@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## v2.0.0
+
+### Added
+
+- Three new simulation categories (9 new examples total, 3 variants each): **Fake Job Offer** (WhatsApp/Telegram/email recruitment scams), **Malicious Browser Extension** (fake update/extension install prompts), and **Vishing / Deepfake Call** (including AI voice-cloning of a boss or family member).
+- **Final Exam**: a 13th, capstone entry that pulls one question from every one of the 12 categories into a single 12-question assessment, in randomized order. Its question bank isn't hand-authored - `data.js` generates it from the other categories so it can never drift out of sync with them. Shown last in the Simulation Selection catalog with a distinct gold "Capstone" badge instead of a difficulty badge.
+- Completing the Final Exam is now required for the certificate, alongside all 12 individual categories - this falls out automatically from the existing certificate-eligibility logic (which already iterated over every entry in `PA_SCENARIOS` generically), no special-case gating code was needed.
+- An 8th training lesson, "Job Offers, Extensions, and Voice Calls," covering the three new categories.
+- A new `tests/simulation-engine.test.mjs` test specifically for the Final Exam, verifying all 12 cross-category questions render their own correct artifact type rather than falling through to the empty state.
+- `tests/data-schema.test.mjs` extended to validate the 3 new categories' content, plus a dedicated check that every Final Exam variant is valid against the schema of the category it was generated from.
+
+### Fixed
+
+- A genuine content/clue mismatch in the new Vishing artifact: a line describing what the caller was asking the user to do was tagged with a clue about the call being unsolicited - unrelated text and explanation. Caught during testing, before shipping, by manually reviewing each new artifact's clue wiring rather than only relying on automated checks (which can't judge whether a clue's *content* makes sense for the element it's attached to, only whether something is present).
+
 ## v1.5.0
 
 ### Added
