@@ -2,6 +2,26 @@
 
 PhishAware is a production-ready, frontend-only phishing awareness simulation platform. It runs directly in a browser, stores progress locally, and can be hosted as a static GitHub Pages site.
 
+**[Live demo](https://ankesh-prajapati.github.io/PhishAware/)**
+
+<!--
+  Add a screenshot or short GIF of the dashboard / a simulation in progress here, e.g.:
+  ![PhishAware dashboard](assets/screenshot-dashboard.png)
+  A 10-second screen recording converted to GIF works well too - GitHub renders
+  GIFs inline. This is the single highest-impact addition for anyone skimming
+  the repo for 30 seconds.
+-->
+
+## Why I Built This
+
+I work in security testing (VAPT, web/network/Chrome-extension assessments), and most phishing-awareness training I'd seen treated every example as obviously malicious - which trains pattern-matching, not judgment. PhishAware is built around realistic, full-fidelity replicas of the actual interfaces people get phished through (Gmail, Outlook, Microsoft/Google login, UPI payment screens, browser extension install prompts, OAuth consent pages) rather than text descriptions of attacks, with three distinct examples per category so the same lesson can't be learned by memorizing one fixed scenario. It's deliberately zero-backend: no server, no database, no account system, no data leaving the browser except optional anonymous page-view analytics - the entire platform is static HTML/CSS/JS that runs from any host, including a GitHub Pages URL with no setup.
+
+## What's Technically Interesting Here
+
+- **A content-generation guarantee, not a copy-paste**: the 12-question Final Exam isn't hand-authored - `data.js` builds it at load time from the other 12 categories, so it can never silently drift out of sync if a category's content changes later (see `docs/ARCHITECTURE.md`).
+- **Tests that target the actual failure modes of this codebase**, not generic coverage: `tests/data-schema.test.mjs` checks every example's data against the exact fields the rendering code reads (extracted from the source, not memorized), and `tests/simulation-engine.test.mjs` drives all 13 pages through a real DOM (jsdom) to catch rendering bugs - both were built after finding real bugs by hand (a hardcoded icon left over from an earlier design, a clue losing its accessibility attributes after a secondary script rebuilt part of the page) and verified by deliberately reintroducing each bug and confirming the relevant test fails. See `CHANGELOG.md` for the specifics.
+- **Defense-in-depth that's actually wired up, not just declared**: every CDN script is pinned with a real SHA-384 Subresource Integrity hash computed from the verified npm package (not assumed), and a same-origin Content-Security-Policy is enforced via `<meta>` on every page - a CSP that would have silently blocked third-party services like Google Analytics if I hadn't gone back and updated it when adding them.
+
 ## Features
 
 - Twelve interactive phishing simulations, each walking through three distinct example scenarios in sequence (e.g. three different phishing emails, three different fake login pages) with its own tailored question, options, and explanation: email, fake login, QR, SMS, social media, business email compromise, MFA fatigue / push-bombing, banking OTP fraud, OAuth consent phishing, fake job offers, malicious browser extensions, and vishing / deepfake calls
@@ -123,6 +143,8 @@ Use a current version of Chrome, Edge, Firefox, or Safari. JavaScript and LocalS
 ## Customizing Scenarios
 
 Edit `PA_SCENARIOS` in `assets/js/data.js`. Each scenario has a stable `id`, page route, question, answer index, explanation, and clue list. Training lessons live in `PA_TRAINING`, and the per-scenario follow-up question bank lives in `PA_QUESTION_BANK`, in the same file. Keep scenario IDs stable after launch so existing LocalStorage records remain associated with the correct exercise. Adding a scenario also needs a matching HTML page (copy an existing one and update `data-page`/`data-scenario`), a sidebar entry in `assets/js/app.js`, and an artifact renderer branch in `renderArtifact()` in `assets/js/simulation.js`.
+
+**A scope note worth knowing if you keep adding categories:** the certificate currently requires completing all 12 individual categories *and* the 12-question Final Exam - this happened automatically as a side effect of `PACertificateEligibility()` in `app.js` iterating over every entry in `PA_SCENARIOS` generically, with no separate gating logic. That's a reasonable choice for "this represents thorough, comprehensive training," but if the goal drifts back toward "a quick but genuine individual awareness check," it's worth deciding on purpose rather than by accumulation - either trim the certificate requirement to a subset of categories, or split the Final Exam out of the requirement so it stays an optional capstone instead of a mandatory 13th step.
 
 ## Security
 

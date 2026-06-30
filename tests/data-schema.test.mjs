@@ -190,6 +190,21 @@ test('final-exam variants are valid against the schema of the category they came
   }
 });
 
+test('final-exam picks a random variant per category on each load, not always the same one', () => {
+  // data.js regenerates window.PA_QUESTION_BANK['final-exam'] fresh every
+  // time it runs (which happens on every page load, including the "New
+  // randomized attempt" button's location.reload()) - this asserts that
+  // regeneration actually varies the selection instead of being silently
+  // hardcoded to index 0 every time, which would make every retake of the
+  // final exam identical.
+  const picks = new Set();
+  for (let i = 0; i < 25; i++) {
+    const { PA_QUESTION_BANK } = loadData();
+    picks.add(PA_QUESTION_BANK[FINAL_EXAM_ID].map(v => v.id).join(','));
+  }
+  assert.ok(picks.size > 1, `expected variety across 25 loads, got the exact same 12-question combination every time: ${[...picks][0]}`);
+});
+
 test('every variant has a well-formed question/options/answer/explanation', () => {
   const { PA_QUESTION_BANK } = loadData();
   for (const [scenarioId, variants] of Object.entries(PA_QUESTION_BANK)) {

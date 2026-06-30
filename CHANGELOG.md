@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## v2.1.0
+
+### Fixed
+
+- The Final Exam always used variant index 0 from each of the 12 categories, so every retake showed the identical 12 questions in a different order rather than genuinely different content. It now picks one of the 3 variants per category at random each time `data.js` runs (i.e. on every page load, including the "New randomized attempt" reload), so retakes actually vary.
+- The dashboard's "Continue learning" widget showed a hardcoded `PA_SCENARIOS.slice(0, 3)` - always the first 3 catalog entries regardless of progress - so 9 of the 13 categories could never appear there. It now prioritizes scenarios with no attempt yet, falling back to the 3 lowest-scoring categories once everything has been attempted at least once (a "practice your weak spots" suggestion instead of going stale).
+- Found and fixed a flaky test introduced by the Final Exam randomization above: `simulation-engine.test.mjs`'s content-presence check occasionally picked an icon class name (e.g. `bi-envelope-fill`) as its "sample text to look for," which is a CSS class never rendered as visible text - it only surfaced once the variant being checked was actually randomized into a real test run. Reproduced over ~20 runs to confirm the ~1-in-8 flake rate, fixed the field-selection heuristic to exclude icon fields, then re-ran 20 more times clean before considering it resolved.
+
+### Added
+
+- Two new tests locking in the above: one confirms the Final Exam's variant selection actually varies across 25 separate loads (not just reshuffled order), the other confirms "Continue learning" surfaces specific not-yet-attempted categories rather than a fixed list - both were verified by deliberately reintroducing the original bug and confirming the test fails, then restoring the fix.
+- README expanded with a "Why I Built This" and "What's Technically Interesting Here" section, a live demo link, and a screenshot placeholder - aimed at someone skimming the repo for the first time rather than someone already reading the full technical docs.
+- An explicit, documented note (in README's "Customizing Scenarios") flagging that the certificate's scope (all 12 categories + the Final Exam) was an emergent side effect of generic eligibility logic rather than a deliberate decision, with the tradeoff and how to change it spelled out, in case "individual quick awareness check" and "comprehensive certification" diverge as priorities later.
+
 ## v2.0.0
 
 ### Added

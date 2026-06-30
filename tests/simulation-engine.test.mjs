@@ -167,7 +167,8 @@ test('final-exam.html: walks through one question from every category, each with
     // falling through to the generic "no artifact configured" empty state.
     const allStepText = steps.map(s => s.text).join(' || ');
     for (const variant of examBank) {
-      const sampleField = Object.values(variant.fields).find(v => typeof v === 'string' && v.length > 6);
+      const sampleField = Object.entries(variant.fields).find(([key, v]) => !/[Ii]con$/.test(key) && typeof v === 'string' && v.length > 6)?.[1];
+      assert.ok(sampleField, `${variant.id}: could not find a sample text field to check for in the exam (all fields were too short or icon-only)`);
       assert.ok(allStepText.includes(sampleField), `expected ${variant.id} (${variant._artifactType}) content to appear somewhere in the exam`);
     }
 
@@ -242,3 +243,39 @@ for (const [scenarioId, { identifyField, iconField }] of Object.entries(ICON_CHE
     }
   });
 }
+
+test('dashboard.html: "Continue learning" surfaces not-yet-attempted scenarios, not a fixed first-3', async () => {
+  let html = fs.readFileSync(path.join(projectDir, 'dashboard.html'), 'utf8');
+  const localScripts = [...html.matchAll(/<script src="(assets\/js\/[^"]+)"[^>]*><\/script>/g)].map(m => m[1]);
+  html = html.replace(/<script[^>]*><\/script>/g, '');
+
+  const dom = new JSDOM(html, { url: 'https://example.org/dashboard.html', runScripts: 'dangerously', pretendToBeVisual: true });
+  dom.window.addEventListener('error', () => {}); // Chart is intentionally not loaded in this test
+
+  for (const src of localScripts.filter(s => !s.endsWith('dashboard.js'))) {
+    dom.window.eval(fs.readFileSync(path.join(projectDir, src), 'utf8'));
+  }
+
+  // Complete every scenario except the 3 most recently added categories,
+  // mirroring a learner partway through the curriculum.
+  const skip = ['job-offer', 'malicious-extension', 'vishing', 'final-exam'];
+  for (const scenario of dom.window.PA_SCENARIOS) {
+    if (skip.includes(scenario.id)) continue;
+    for (const variant of dom.window.PA_QUESTION_BANK[scenario.id]) {
+      dom.window.PGStorage.recordResult({ scenarioId: scenario.id, points: 90, correct: true, questionId: variant.id, responseSeconds: 5 });
+    }
+    dom.window.PGStorage.saveSession(scenario.id, { phase: 'complete' });
+  }
+
+  dom.window.eval(fs.readFileSync(path.join(projectDir, 'assets/js/dashboard.js'), 'utf8'));
+  dom.window.document.dispatchEvent(new dom.window.Event('pa:ready', { bubbles: true }));
+  await wait(100);
+
+  const text = dom.window.document.getElementById('appContent').textContent;
+  for (const id of ['job-offer', 'malicious-extension', 'vishing']) {
+    const title = dom.window.PA_SCENARIOS.find(s => s.id === id).title;
+    assert.ok(text.includes(title), `"Continue learning" should surface the not-yet-attempted "${title}", not a hardcoded first-3 from the catalog`);
+  }
+
+  dom.window.close();
+});

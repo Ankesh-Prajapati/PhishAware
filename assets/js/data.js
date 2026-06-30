@@ -95,5 +95,9 @@ window.PA_QUESTION_BANK={
 // first variant from every real scenario (excluding itself), tags each with
 // the category it came from (_artifactType), so simulation.js knows which
 // renderArtifact branch to use for that specific question.
-window.PA_QUESTION_BANK['final-exam'] = window.PA_SCENARIOS.filter(s => s.id !== 'final-exam').map(s => Object.assign({}, window.PA_QUESTION_BANK[s.id][0], { _artifactType: s.id }));
+window.PA_QUESTION_BANK['final-exam'] = window.PA_SCENARIOS.filter(s => s.id !== 'final-exam').map(s => {
+  const variants = window.PA_QUESTION_BANK[s.id];
+  const pick = variants[Math.floor(Math.random() * variants.length)];
+  return Object.assign({}, pick, { _artifactType: s.id });
+});
 
